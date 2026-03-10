@@ -1,7 +1,6 @@
-import { Component, OnInit, ViewChild, ElementRef, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, PLATFORM_ID, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { isPlatformBrowser } from '@angular/common';
-import type * as L from 'leaflet';
 
 @Component({
   selector: 'app-carte',
@@ -246,7 +245,7 @@ import type * as L from 'leaflet';
     }
   `]
 })
-export class CarteComponent implements OnInit {
+export class CarteComponent implements OnInit, AfterViewInit {
   @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
   
   private map: any;
@@ -254,6 +253,8 @@ export class CarteComponent implements OnInit {
   private L: any;
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
+  regions = [
     { name: 'Tunis', lat: 36.8065, lng: 10.1815, count: 324, level: 'high', disease: 'Grippe' },
     { name: 'Sfax', lat: 34.7405, lng: 10.7603, count: 156, level: 'medium', disease: 'Gastro-entérite' },
     { name: 'Sousse', lat: 35.8256, lng: 10.6369, count: 89, level: 'medium', disease: 'Allergie' },
@@ -266,24 +267,55 @@ export class CarteComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.initMap();
+    console.log('ngOnInit called');
+  }
+
+  ngAfterViewInit(): void {
+    console.log('ngAfterViewInit called');
+    if (isPlatformBrowser(this.platformId)) {
+      // Add a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        this.initMap();
+      }, 100);
+    }
   }
 
   private initMap(): void {
-    if (!this.mapContainer) return;
+    console.log('initMap called');
+    console.log('mapContainer:', this.mapContainer);
+    console.log('mapContainer.nativeElement:', this.mapContainer?.nativeElement);
+    console.log('isPlatformBrowser:', isPlatformBrowser(this.platformId));
+    
+    if (!this.mapContainer || !this.mapContainer.nativeElement) {
+      console.error('Map container element not found!');
+      return;
+    }
 
-    this.map = L.map(this.mapContainer.nativeElement).setView([35.8989, 9.5375], 6);
+    // Import Leaflet only in browser
+    if (isPlatformBrowser(this.platformId)) {
+      try {
+        const L = require('leaflet');
+        this.L = L;
+        console.log('Leaflet loaded:', L);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-      maxZoom: 18
-    }).addTo(this.map);
+        this.map = L.map(this.mapContainer.nativeElement).setView([35.8989, 9.5375], 6);
+        console.log('Map created:', this.map);
 
-    this.addMarkers(this.regions);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '© OpenStreetMap contributors',
+          maxZoom: 18
+        }).addTo(this.map);
+
+        this.addMarkers(this.regions);
+        console.log('Markers added');
+      } catch (error) {
+        console.error('Error initializing map:', error);
+      }
+    }
   }
 
   private addMarkers(regions: any[]): void {
-    if (!this.map) return;
+    if (!this.map || !this.L) return;
 
     // Supprimer les anciens marqueurs
     this.markers.forEach(marker => this.map!.removeLayer(marker));
@@ -293,7 +325,7 @@ export class CarteComponent implements OnInit {
       const color = this.getColorByLevel(region.level);
       const icon = this.createCustomIcon(color);
       
-      const marker = L.marker([region.lat, region.lng], { icon })
+      const marker = this.L.marker([region.lat, region.lng], { icon })
         .bindPopup(`
           <div style="font-family: Arial, sans-serif;">
             <strong>${region.name}</strong><br>
@@ -308,8 +340,8 @@ export class CarteComponent implements OnInit {
     });
   }
 
-  private createCustomIcon(color: string): L.Icon {
-    return L.icon({
+  private createCustomIcon(color: string): any {
+    return this.L.icon({
       iconUrl: `data:image/svg+xml;base64,${this.svgToBase64(color)}`,
       iconSize: [32, 41],
       iconAnchor: [16, 41],
