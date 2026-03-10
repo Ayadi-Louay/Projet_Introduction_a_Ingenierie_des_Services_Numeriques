@@ -1,0 +1,147 @@
+/* Global App Styles */
+
+:host {
+  display: contents;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #ffffff;
+  color: #1f2937;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Typography */
+h1 {
+  color: #E70013;
+}
+
+h2 {
+  color: #E70013;
+}
+
+h3 {
+  color: #1f2937;
+}
+
+h4 {
+  color: #1f2937;
+}
+
+/* Links */
+a {
+  color: #E70013;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+a:hover {
+  color: #b3000f;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: #E70013;
+  color: white;
+  box-shadow: 0 2px 8px rgba(231, 0, 19, 0.15);
+}
+
+.btn-primary:hover {
+  background-color: #b3000f;
+  box-shadow: 0 4px 12px rgba(231, 0, 19, 0.25);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #E70013;
+  border: 2px solid #E70013;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-secondary:hover {
+  background-color: #E70013;
+  color: white;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: #E70013;
+  border: 2px solid #E70013;
+}
+
+.btn-outline:hover {
+  background-color: #E70013;
+  color: white;
+}
+
+.btn-outline.btn-sm:hover {
+  background-color: rgba(231, 0, 19, 0.1);
+  color: #E70013;
+  border-color: #E70013;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+}
+
+.btn-lg {
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+}
+
+/* Container */
+.container {
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .btn {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.9375rem;
+  }
+}
+
