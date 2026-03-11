@@ -2,11 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signin',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule], // <-- HttpClientModule ajouté
   template: `
     <div class="auth-page">
       <div class="auth-container">
@@ -88,6 +90,7 @@ import { FormsModule } from '@angular/forms';
     </div>
   `,
   styles: [`
+   
     .auth-page {
       min-height: 100vh;
       background: #f8fafc;
@@ -297,34 +300,40 @@ import { FormsModule } from '@angular/forms';
       .auth-card {
         padding: 1.5rem;
       }
-    }
-  `]
+  
+  
+  
+  
+    `]
 })
 export class SigninComponent {
-  formData = {
-    email: '',
-    password: '',
-    remember: false
-  };
-
+  formData = { email: '', password: '', remember: false };
   isLoading = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  isFormValid(): boolean {
+    return !!(this.formData.email && this.formData.password);
+  }
 
   onSubmit(): void {
-    if (this.isLoading) return;
+    if (this.isLoading || !this.isFormValid()) return;
 
     this.isLoading = true;
 
-    // Simuler une connexion
-    setTimeout(() => {
-      console.log('Tentative de connexion:', this.formData);
-      
-      // Simuler une connexion réussie
-      this.isLoading = false;
-      
-      // Rediriger vers la page d'accueil
-      this.router.navigate(['/']);
-    }, 2000);
+    this.authService.login(this.formData.email, this.formData.password)
+      .subscribe({
+        next: (response: any) => {
+          this.router.navigate(['/dashboard']);
+          this.isLoading = false;
+        },
+        error: (err: any) => {
+          alert(err.error?.message || 'Email ou mot de passe incorrect');
+          this.isLoading = false;
+        }
+      });
   }
 }

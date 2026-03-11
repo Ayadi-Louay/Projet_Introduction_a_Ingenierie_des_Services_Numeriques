@@ -1,5 +1,5 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
@@ -669,6 +669,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   selectedCity: string = 'Tunis';
   selectedPeriod: string = '7 jours';
 
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
   trends = [
     {
       name: 'Grippe',
@@ -697,6 +699,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     // Simple chart implementation using CSS/SVG instead of Chart.js to avoid dependencies
+    // Only run in browser, not in SSR
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     this.createSimpleCharts();
   }
 
