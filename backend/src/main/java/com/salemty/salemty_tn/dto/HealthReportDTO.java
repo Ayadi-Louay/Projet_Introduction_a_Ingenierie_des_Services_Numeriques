@@ -10,6 +10,7 @@ import java.util.List;
 @AllArgsConstructor
 public class HealthReportDTO {
     private String id;
+    private String userId;
     private String symptoms;
     private List<String> symptomList;
     private String description;

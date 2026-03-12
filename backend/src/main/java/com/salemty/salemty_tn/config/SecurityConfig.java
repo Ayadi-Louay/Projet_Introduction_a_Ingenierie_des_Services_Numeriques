@@ -46,6 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/health/alerts").permitAll()
                         .requestMatchers("/health/trends").permitAll()
                         .requestMatchers("/health/stats").permitAll()
+                        // Authenticated endpoints
+                        .requestMatchers("/health/reports/my-reports").authenticated()
                         // Require authentication for everything else
                         .anyRequest().authenticated())
                 .csrf(csrf -> csrf.disable())

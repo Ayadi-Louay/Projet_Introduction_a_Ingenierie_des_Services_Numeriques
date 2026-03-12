@@ -27,7 +27,7 @@ import { AuthService } from '../services/auth.service';
              class="nav-link">
             Accueil
           </a>
-          <a routerLink="/signaler" 
+          <a *ngIf="authService.isAuthenticated()" routerLink="/signaler" 
              routerLinkActive="active"
              class="nav-link">
             Signaler
@@ -47,7 +47,7 @@ import { AuthService } from '../services/auth.service';
              class="nav-link">
             Prévention
           </a>
-          <a routerLink="/profil" 
+          <a *ngIf="authService.isAuthenticated()" routerLink="/profil" 
              routerLinkActive="active"
              class="nav-link">
             Profil

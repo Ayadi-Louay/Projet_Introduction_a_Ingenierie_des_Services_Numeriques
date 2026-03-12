@@ -2,7 +2,9 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { ApiService } from '../services/api.service';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signaler',
@@ -454,7 +456,16 @@ export class SignalerComponent {
   hasComorbidities: boolean = false;
   selectedGovernorate: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService, 
+    private authService: AuthService,
+    private router: Router
+  ) {
+    // Redirect to login if not authenticated
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/signin']);
+    }
+  }
 
   nextStep() {
     if (this.currentStep() < 3) {
@@ -491,7 +502,9 @@ export class SignalerComponent {
   }
 
   private buildReportPayload() {
+    const currentUser = this.authService.currentUser();
     return {
+      userId: currentUser?.id || '',
       symptoms: this.selectedSymptoms.join(', '),
       symptomList: this.selectedSymptoms,
       description: this.otherSymptoms,

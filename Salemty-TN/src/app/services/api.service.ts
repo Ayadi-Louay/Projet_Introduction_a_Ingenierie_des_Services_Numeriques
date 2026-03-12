@@ -29,5 +29,10 @@ export class ApiService {
     return this.http.post(`${this.baseUrl}/health/reports/submit`, data, this.getAuthHeaders());
   }
 
+  // Fetch all reports for current user
+  getUserReports() {
+    return this.http.get(`${this.baseUrl}/health/reports/my-reports`, this.getAuthHeaders());
+  }
+
   // other API methods can be added here as needed
 }

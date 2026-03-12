@@ -1,5 +1,8 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-profil',
@@ -9,10 +12,10 @@ import { CommonModule } from '@angular/common';
     <div class="profil-page">
       <div class="container">
         <div class="profile-header">
-          <div class="profile-avatar">●</div>
+          <div class="profile-avatar">{{ authService.currentUser()?.firstName.charAt(0) }}</div>
           <div class="profile-info">
-            <h1>Mon profil</h1>
-            <p class="profile-status">Utilisateur anonyme · ID: SAL-2026-1847</p>
+            <h1>{{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</h1>
+            <p class="profile-status">Email: {{ authService.currentUser()?.email }}</p>
           </div>
         </div>
 
@@ -20,40 +23,21 @@ import { CommonModule } from '@angular/common';
           <!-- Historique des signalements -->
           <section class="profile-section full-width">
             <h2>Mes signalements</h2>
-            <div class="reports-list">
-              <div class="report-item">
-                <div class="report-date">Il y a 2 jours</div>
+            <div *ngIf="userReports().length > 0; else noReports" class="reports-list">
+              <div *ngFor="let report of userReports()" class="report-item">
+                <div class="report-date">{{ report.createdAt | date: 'dd/MM/yyyy' }}</div>
                 <div class="report-content">
-                  <h3>Grippe</h3>
-                  <p><strong>Gouvernorat:</strong> Tunis</p>
-                  <p><strong>Symptômes:</strong> Toux, Fièvre, Mal de tête</p>
-                  <p><strong>Durée:</strong> 1-3 jours</p>
+                  <h3>{{ report.governorate }}</h3>
+                  <p><strong>Symptômes:</strong> {{ report.symptoms }}</p>
+                  <p><strong>Sévérité:</strong> {{ report.severity }}</p>
+                  <p><strong>Description:</strong> {{ report.description || '-' }}</p>
                 </div>
-                <div class="report-status">✅ Confirmé</div>
-              </div>
-
-              <div class="report-item">
-                <div class="report-date">Il y a 5 jours</div>
-                <div class="report-content">
-                  <h3>Rhume</h3>
-                  <p><strong>Gouvernorat:</strong> Tunis</p>
-                  <p><strong>Symptômes:</strong> Mal de gorge, Fatigue</p>
-                  <p><strong>Durée:</strong> 4-7 jours</p>
-                </div>
-                <div class="report-status">✅ Confirmé</div>
-              </div>
-
-              <div class="report-item">
-                <div class="report-date">Il y a 10 jours</div>
-                <div class="report-content">
-                  <h3>Allergie</h3>
-                  <p><strong>Gouvernorat:</strong> Tunis</p>
-                  <p><strong>Symptômes:</strong> Mal de tête, Fatigue</p>
-                  <p><strong>Durée:</strong> 1-3 jours</p>
-                </div>
-                <div class="report-status">✅ Confirmé</div>
+                <div class="report-status">✅ Soumis</div>
               </div>
             </div>
+            <ng-template #noReports>
+              <p class="no-data">Aucun signalement trouvé</p>
+            </ng-template>
           </section>
 
           <!-- Statistiques personnelles -->
@@ -61,14 +45,14 @@ import { CommonModule } from '@angular/common';
             <h2>Mes statistiques</h2>
             <div class="stats-box">
               <div class="stat">
-                <div class="stat-number">3</div>
+                <div class="stat-number">{{ userReports().length }}</div>
                 <div class="stat-label">Signalements totaux</div>
               </div>
               <div class="stat">
-                <div class="stat-number">2</div>
-                <div class="stat-label">Régions suivies</div>
+                <div class="stat-number">{{ uniqueGovernoratesCount() }}</div>
+                <div class="stat-label">Régions signalées</div>
               </div>
-                <div class="stat">
+              <div class="stat">
                 <div class="stat-number">100%</div>
                 <div class="stat-label">Contributions validées</div>
               </div>
@@ -154,7 +138,7 @@ import { CommonModule } from '@angular/common';
     }
 
     .profile-avatar {
-      font-size: 4rem;
+      font-size: 3rem;
       background: linear-gradient(135deg, #E70013, #b3000f);
       width: 100px;
       height: 100px;
@@ -162,6 +146,9 @@ import { CommonModule } from '@angular/common';
       display: flex;
       align-items: center;
       justify-content: center;
+      color: white;
+      font-weight: bold;
+      text-transform: uppercase;
     }
 
     .profile-info h1 {
@@ -172,6 +159,13 @@ import { CommonModule } from '@angular/common';
       color: #6b7280;
       margin: 0;
       font-size: 0.95rem;
+    }
+
+    .no-data {
+      text-align: center;
+      color: #9ca3af;
+      padding: 2rem;
+      font-size: 1rem;
     }
 
     .profile-grid {
@@ -367,4 +361,43 @@ import { CommonModule } from '@angular/common';
     }
   `]
 })
-export class ProfilComponent { }
+export class ProfilComponent implements OnInit {
+  userReports = signal<any[]>([]);
+  loading = signal(false);
+
+  constructor(
+    public authService: AuthService,
+    private api: ApiService,
+    private router: Router
+  ) {
+    // Redirect to login if not authenticated
+    if (!this.authService.isAuthenticated()) {
+      this.router.navigate(['/signin']);
+    }
+  }
+
+  ngOnInit() {
+    this.loadUserReports();
+  }
+
+  loadUserReports() {
+    this.loading.set(true);
+    this.api.getUserReports().subscribe({
+      next: (res: any) => {
+        if (res.success && res.data) {
+          this.userReports.set(res.data);
+        }
+        this.loading.set(false);
+      },
+      error: (err) => {
+        console.error('Error loading reports:', err);
+        this.loading.set(false);
+      }
+    });
+  }
+
+  uniqueGovernoratesCount(): number {
+    const governorates = new Set(this.userReports().map(r => r.governorate));
+    return governorates.size;
+  }
+}
