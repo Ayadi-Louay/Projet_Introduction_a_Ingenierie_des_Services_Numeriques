@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  salemty-backend:
+    build: ./backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATA_MONGODB_URI: ${MONGODB_URI:-mongodb+srv://ayadilouay04_db_user:0000@salemtytn.2rx1vt1.mongodb.net/?appName=SalemtyTN}
+      JWT_SECRET: ${JWT_SECRET:-your_secret_key}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME:-your_email@gmail.com}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD:-your_password}
+      SPRING_PROFILES_ACTIVE: ${PROFILE:-dev}
+    depends_on:
+      - mongodb
+    networks:
+      - salemty-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  salemty-frontend:
+    build: ./Salemty-TN
+    ports:
+      - "4200:4200"
+    environment:
+      API_URL: ${API_URL:-http://localhost:8080/api}
+    depends_on:
+      - salemty-backend
+    networks:
+      - salemty-network
+
+  mongodb:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: salemtytn
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - salemty-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mongodb_data:
+
+networks:
+  salemty-network:
+    driver: bridge
