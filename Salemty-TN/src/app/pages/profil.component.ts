@@ -381,16 +381,23 @@ export class ProfilComponent implements OnInit {
   }
 
   loadUserReports() {
+    console.log('Fetching user reports');
     this.loading.set(true);
     this.api.getUserReports().subscribe({
       next: (res: any) => {
-        if (res.success && res.data) {
+        console.log('user reports response', res);
+        if (res.success && Array.isArray(res.data)) {
           this.userReports.set(res.data);
+        } else {
+          // clear list if we didn't get an array
+          this.userReports.set([]);
         }
         this.loading.set(false);
       },
       error: (err) => {
         console.error('Error loading reports:', err);
+        // clear on error too to avoid stale data
+        this.userReports.set([]);
         this.loading.set(false);
       }
     });

@@ -11,13 +11,20 @@ export interface User {
   email: string;
 }
 
+// login/register endpoints return LoginResponse structure
+export interface LoginResponse {
+  token: string;
+  userId: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role?: string;
+}
+
 export interface AuthResponse {
   success: boolean;
   message: string;
-  data?: {
-    token: string;
-    user: User;
-  };
+  data?: LoginResponse;
 }
 
 @Injectable({
@@ -62,7 +69,14 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response.success && response.data) {
-            this.setAuth(response.data.token, response.data.user);
+            const lr = response.data;
+            const user: User = {
+              id: lr.userId,
+              firstName: lr.firstName,
+              lastName: lr.lastName,
+              email: lr.email,
+            };
+            this.setAuth(lr.token, user);
           }
         })
       );
@@ -74,7 +88,14 @@ export class AuthService {
       .pipe(
         tap((response) => {
           if (response.success && response.data) {
-            this.setAuth(response.data.token, response.data.user);
+            const lr = response.data;
+            const user: User = {
+              id: lr.userId,
+              firstName: lr.firstName,
+              lastName: lr.lastName,
+              email: lr.email,
+            };
+            this.setAuth(lr.token, user);
           }
         })
       );

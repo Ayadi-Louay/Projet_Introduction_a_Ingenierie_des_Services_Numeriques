@@ -526,6 +526,10 @@ export class SignalerComponent {
           console.log('Response received:', res);
           if (res.success) {
             this.submissionSuccess.set(true);
+            // automatically redirect to profile so the user can see their report
+            setTimeout(() => {
+              this.router.navigate(['/profil']);
+            }, 1500);
           } else {
             console.error('submit error', res.message);
             alert('Erreur: ' + (res.message || 'Une erreur est survenue'));

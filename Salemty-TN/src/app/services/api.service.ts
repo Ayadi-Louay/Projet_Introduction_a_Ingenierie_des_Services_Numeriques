@@ -12,15 +12,14 @@ export class ApiService {
 
   private getAuthHeaders() {
     const token = localStorage.getItem("token");
-    let headers = new HttpHeaders();
-    headers = headers.set('Content-Type', 'application/json');
-    
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+
     if (token) {
       headers = headers.set('Authorization', `Bearer ${token}`);
-    } else {
-      headers = headers.set('Authorization', '');
     }
-    
+
+    // debugging aid
+    // console.log('auth headers', headers.keys(), headers.get('Authorization'));
     return { headers };
   }
 
