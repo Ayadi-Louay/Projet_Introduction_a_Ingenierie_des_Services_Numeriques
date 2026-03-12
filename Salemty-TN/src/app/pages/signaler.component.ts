@@ -505,24 +505,26 @@ export class SignalerComponent {
   }
 
   submitForm() {
-    if (
-      this.selectedSymptoms.length > 0 &&
-      this.symptomDuration &&
-      this.selectedGovernorate
-    ) {
+    if (this.selectedSymptoms.length > 0 && this.selectedGovernorate) {
       const payload = this.buildReportPayload();
+      console.log('Submitting payload:', payload);
       this.api.submitReport(payload).subscribe({
         next: (res: any) => {
+          console.log('Response received:', res);
           if (res.success) {
             this.submissionSuccess.set(true);
           } else {
             console.error('submit error', res.message);
+            alert('Erreur: ' + (res.message || 'Une erreur est survenue'));
           }
         },
         error: (err) => {
           console.error('HTTP error', err);
+          alert('Erreur de connexion: ' + (err?.error?.message || err?.message || 'Impossible de se connecter au serveur'));
         },
       });
+    } else {
+      alert('Veuillez remplir tous les champs requis (symptômes et gouvernorate)');
     }
   }
 

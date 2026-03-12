@@ -5,6 +5,8 @@ import com.salemty.salemty_tn.dto.HealthReportDTO;
 import com.salemty.salemty_tn.model.HealthReport;
 import com.salemty.salemty_tn.service.HealthService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +30,7 @@ public class HealthController {
             HealthReport report = healthService.submitReport(userId, reportDTO);
             return ResponseEntity.ok(new ApiResponse<>(true, "Signalement soumis avec succès", report));
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(false, "Erreur lors de la soumission", null, e.getMessage()));
         }

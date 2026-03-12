@@ -19,7 +19,8 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<String>>> getUsers(@RequestHeader(value = "Authorization", required = false) String token) {
+    public ResponseEntity<ApiResponse<List<String>>> getUsers(
+            @RequestHeader(value = "Authorization", required = false) String token) {
         try {
             List<String> users = adminService.getUsers();
             return ResponseEntity.ok(new ApiResponse<>(true, "Utilisateurs récupérés", users));

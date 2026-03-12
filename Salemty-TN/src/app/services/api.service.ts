@@ -12,17 +12,21 @@ export class ApiService {
 
   private getAuthHeaders() {
     const token = localStorage.getItem("token");
+    let headers = new HttpHeaders();
+    headers = headers.set('Content-Type', 'application/json');
+    
     if (token) {
-      return { Authorization: `Bearer ${token}` };
+      headers = headers.set('Authorization', `Bearer ${token}`);
+    } else {
+      headers = headers.set('Authorization', '');
     }
-    // header is required by backend but value can be empty if not logged in
-    return { Authorization: "" };
+    
+    return { headers };
   }
 
   submitReport(data: any) {
-    return this.http.post(`${this.baseUrl}/health/reports/submit`, data, {
-      headers: this.getAuthHeaders(),
-    });
+    console.log('Sending report:', data);
+    return this.http.post(`${this.baseUrl}/health/reports/submit`, data, this.getAuthHeaders());
   }
 
   // other API methods can be added here as needed

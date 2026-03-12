@@ -6,6 +6,8 @@ import com.salemty.salemty_tn.dto.HealthReportDTO;
 import com.salemty.salemty_tn.repository.HealthReportRepository;
 import com.salemty.salemty_tn.repository.HealthAlertRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,11 +18,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class HealthServiceImpl implements HealthService {
 
+    private static final Logger logger = LoggerFactory.getLogger(HealthServiceImpl.class);
     private final HealthReportRepository healthReportRepository;
     private final HealthAlertRepository healthAlertRepository;
 
     @Override
     public HealthReport submitReport(String userId, HealthReportDTO reportDTO) {
+        logger.info("Starting submitReport with userId: {} and governorate: {}", userId, reportDTO.getGovernorate());
         HealthReport report = new HealthReport();
         report.setUserId(userId);
         report.setSymptoms(reportDTO.getSymptoms());
@@ -36,7 +40,9 @@ public class HealthServiceImpl implements HealthService {
         report.setCreatedAt(LocalDateTime.now());
         report.setAnonymous(reportDTO.isAnonymous());
 
-        return healthReportRepository.save(report);
+        HealthReport savedReport = healthReportRepository.save(report);
+        logger.info("Report saved successfully with id: {}", savedReport.getId());
+        return savedReport;
     }
 
     @Override
