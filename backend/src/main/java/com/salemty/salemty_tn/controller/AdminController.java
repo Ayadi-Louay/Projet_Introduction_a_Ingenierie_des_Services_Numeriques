@@ -19,7 +19,7 @@ public class AdminController {
     private final AdminService adminService;
 
     @GetMapping("/users")
-    public ResponseEntity<ApiResponse<List<String>>> getUsers(@RequestHeader("Authorization") String token) {
+    public ResponseEntity<ApiResponse<List<String>>> getUsers(@RequestHeader(value = "Authorization", required = false) String token) {
         try {
             List<String> users = adminService.getUsers();
             return ResponseEntity.ok(new ApiResponse<>(true, "Utilisateurs récupérés", users));
@@ -31,7 +31,7 @@ public class AdminController {
 
     @PutMapping("/reports/{reportId}/validate")
     public ResponseEntity<ApiResponse<String>> validateReport(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @PathVariable String reportId,
             @RequestParam String status) {
         try {

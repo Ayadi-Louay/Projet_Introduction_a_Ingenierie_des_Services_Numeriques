@@ -21,7 +21,7 @@ public class HealthController {
 
     @PostMapping("/reports/submit")
     public ResponseEntity<ApiResponse<HealthReport>> submitReport(
-            @RequestHeader("Authorization") String token,
+            @RequestHeader(value = "Authorization", required = false) String token,
             @RequestBody HealthReportDTO reportDTO) {
         try {
             String userId = "test-user-id"; // Extract from token

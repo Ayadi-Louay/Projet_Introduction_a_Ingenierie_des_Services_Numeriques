@@ -1,0 +1,4 @@
+export const environment = {
+  apiUrl: "https://your-backend-domain.com/api",
+  production: true,
+};
