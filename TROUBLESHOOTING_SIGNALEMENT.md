@@ -3,23 +3,26 @@
 ### Problèmes Corrigés dans cette itération
 
 #### 1. **ApiService - Headers HTTP incorrects** ✅ FIXED
-**Problème:** 
-- Les headers étaient passés en tant qu'objet simple `{ Authorization: ... }` 
+
+**Problème:**
+
+- Les headers étaient passés en tant qu'objet simple `{ Authorization: ... }`
 - Au lieu de passer une instance `HttpHeaders` correcte
 
 **Solution:**
+
 ```typescript
 private getAuthHeaders() {
   const token = localStorage.getItem("token");
   let headers = new HttpHeaders();
   headers = headers.set('Content-Type', 'application/json');
-  
+
   if (token) {
     headers = headers.set('Authorization', `Bearer ${token}`);
   } else {
     headers = headers.set('Authorization', '');
   }
-  
+
   return { headers }; // ✅ Retourner objet avec 'headers' clé
 }
 
@@ -30,11 +33,14 @@ submitReport(data: any) {
 ```
 
 #### 2. **Component submitForm() - Validation trop stricte** ✅ FIXED
-**Problème:** 
-- Exigeait `symptomDuration` ET `selectedGovernorate` 
+
+**Problème:**
+
+- Exigeait `symptomDuration` ET `selectedGovernorate`
 - La durée n'est pas toujours nécessaire
 
 **Solution:**
+
 ```typescript
 submitForm() {
   if (this.selectedSymptoms.length > 0 && this.selectedGovernorate) {
@@ -62,7 +68,9 @@ submitForm() {
 ```
 
 #### 3. **Backend - Logging pour debugging** ✅ ADDED
+
 **Ajout:**
+
 ```java
 // HealthServiceImpl.java
 private static final Logger logger = LoggerFactory.getLogger(HealthServiceImpl.class);
@@ -87,6 +95,7 @@ public HealthReport submitReport(String userId, HealthReportDTO reportDTO) {
 ## 🧪 Guide de Test Complet
 
 ### Test 1: Vérifier la requête HTTP
+
 ```bash
 # 1. Ouvrir DevTools (F12) -> Network
 # 2. Aller à http://localhost:4200 (ou 3000)
@@ -101,6 +110,7 @@ public HealthReport submitReport(String userId, HealthReportDTO reportDTO) {
 ```
 
 ### Test 2: Vérifier les logs Frontend (F12 Console)
+
 ```
 ✅ "Submitting payload: {...}"
 ✅ "Response received: {...}"
@@ -109,6 +119,7 @@ ou
 ```
 
 ### Test 3: Vérifier les logs Backend
+
 ```bash
 # Terminal où le backend tourne:
 [INFO] Starting submitReport with userId: test-user-id and governorate: Tunis
@@ -119,6 +130,7 @@ java.lang.Exception: ...
 ```
 
 ### Test 4: Vérifier la base de données
+
 ```
 1. Aller sur https://cloud.mongodb.com
 2. Clusters -> salemtytn
@@ -135,22 +147,23 @@ java.lang.Exception: ...
 
 ## 🔍 Checklist de Diagnostic Rapide
 
-| Élément | ✅ OK | ❌ Problème |
-|---------|--------|----------|
-| **Frontend charge** | Page visible | Erreur blanc |
-| **Formulaire remplissable** | Input répondent | Champs gris/désactivés |
-| **Bouton cliquable** | Boutton active | Bouton grisé |
-| **DevTools Network** | POST 200 | 404/500/CORS error |
-| **Response JSON** | `{"success": true}` | `{"success": false}` ou erreur |
-| **Console Frontend** | Logs debug clairs | Erreurs rouge |
-| **Logs Backend** | INFO messages | Exceptions/Errors |
-| **MongoDB** | Document créé | Collection vide |
+| Élément                     | ✅ OK               | ❌ Problème                    |
+| --------------------------- | ------------------- | ------------------------------ |
+| **Frontend charge**         | Page visible        | Erreur blanc                   |
+| **Formulaire remplissable** | Input répondent     | Champs gris/désactivés         |
+| **Bouton cliquable**        | Boutton active      | Bouton grisé                   |
+| **DevTools Network**        | POST 200            | 404/500/CORS error             |
+| **Response JSON**           | `{"success": true}` | `{"success": false}` ou erreur |
+| **Console Frontend**        | Logs debug clairs   | Erreurs rouge                  |
+| **Logs Backend**            | INFO messages       | Exceptions/Errors              |
+| **MongoDB**                 | Document créé       | Collection vide                |
 
 ---
 
 ## 🚀 Étapes de Lancement
 
 ### Backend
+
 ```bash
 cd backend
 mvn spring-boot:run
@@ -158,6 +171,7 @@ mvn spring-boot:run
 ```
 
 ### Frontend
+
 ```bash
 cd Salemty-TN
 npm install
@@ -166,6 +180,7 @@ npm start
 ```
 
 ### Tester
+
 ```
 1. Ouvrir http://localhost:4200
 2. Naviguer vers "Signalez vos symptômes"
@@ -178,42 +193,51 @@ npm start
 ## ❌ Problèmes Connus
 
 ### CORS Error dans Console
+
 ```
-Access to XMLHttpRequest at 'http://localhost:8080/api/health/reports/submit' 
+Access to XMLHttpRequest at 'http://localhost:8080/api/health/reports/submit'
 from origin 'http://localhost:4200' has been blocked by CORS policy
 ```
+
 **Solution:** Backend configuration.properties:
+
 ```properties
 spring.web.cors.allowed-origins=http://localhost:4200,http://localhost:3000
 ```
 
 ### HTTP 404
+
 ```
 POST http://localhost:8080/api/health/reports/submit 404 (Not Found)
 ```
+
 **Solution:** Vérifier que l'URL est exacte et le controller mappé correctement
 
 ### HTTP 500
+
 ```
 POST http://localhost:8080/api/health/reports/submit 500 (Internal Server Error)
 ```
+
 **Solution:** Voir les logs backend pour l'exception
 
 ### JSON Parse Error
+
 ```
 SyntaxError: Unexpected token < in JSON at position 0
 ```
+
 **Solution:** Backend retourne du HTML au lieu de JSON (probablement une erreur 500 ou 404)
 
 ---
 
 ## 📋 Fichiers Modifiés
 
-| Fichier | Change |
-|---------|--------|
-| Salemty-TN/src/app/services/api.service.ts | ✅ HttpHeaders fix + logging |
+| Fichier                                        | Change                           |
+| ---------------------------------------------- | -------------------------------- |
+| Salemty-TN/src/app/services/api.service.ts     | ✅ HttpHeaders fix + logging     |
 | Salemty-TN/src/app/pages/signaler.component.ts | ✅ Validation relâchée + erreurs |
-| backend/.../HealthServiceImpl.java | ✅ Logging ajouté |
-| backend/.../HealthController.java | ✅ Stack trace ajoutée |
+| backend/.../HealthServiceImpl.java             | ✅ Logging ajouté                |
+| backend/.../HealthController.java              | ✅ Stack trace ajoutée           |
 
 **Statut:** ✅ Ready to test
