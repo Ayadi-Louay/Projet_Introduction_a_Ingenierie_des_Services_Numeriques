@@ -2,11 +2,13 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signup',
   standalone: true,
-  imports: [CommonModule, RouterModule, FormsModule],
+  imports: [CommonModule, RouterModule, FormsModule, HttpClientModule],
   template: `
     <div class="auth-page">
       <div class="auth-container">
@@ -419,7 +421,10 @@ export class SignupComponent {
 
   isLoading = false;
 
-  constructor(private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   get passwordStrength(): number {
     if (!this.formData.password) return 0;
@@ -469,15 +474,40 @@ export class SignupComponent {
 
     this.isLoading = true;
 
-    // Simuler une inscription
-    setTimeout(() => {
-      console.log('Tentative d\'inscription:', this.formData);
-      
-      // Simuler une inscription réussie
-      this.isLoading = false;
-      
-      // Rediriger vers la page de connexion
-      this.router.navigate(['/signin']);
-    }, 2000);
+    const userData = {
+      firstName: this.formData.firstName,
+      lastName: this.formData.lastName,
+      email: this.formData.email,
+      phone: this.formData.phone || '',
+      password: this.formData.password,
+      newsletter: this.formData.newsletter
+    };
+
+    this.authService.register(userData)
+      .subscribe({
+        next: (response: any) => {
+          console.log('Inscription réussie:', response);
+          this.isLoading = false;
+          this.router.navigate(['/signin']);
+        },
+        error: (err: any) => {
+          console.error('Erreur d\'inscription:', err);
+          let errorMessage = 'Une erreur est survenue lors de l\'inscription';
+          
+          // Extract error message from different possible error formats
+          if (err.error?.message) {
+            errorMessage = err.error.message;
+          } else if (err.error?.error) {
+            errorMessage = err.error.error;
+          } else if (typeof err.error === 'string') {
+            errorMessage = err.error;
+          } else if (err.message) {
+            errorMessage = err.message;
+          }
+          
+          alert(errorMessage);
+          this.isLoading = false;
+        }
+      });
   }
 }

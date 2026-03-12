@@ -1,0 +1,14 @@
+spring:
+  application:
+    name: salemty-backend
+
+  data:
+    mongodb:
+      uri: "mongodb+srv://mahdi:mahdi1234@cluster1.5hn8vvk.mongodb.net/salemty?retryWrites=true&w=majority"
+
+server:
+  port: ${SERVER_PORT:8081}
+
+jwt:
+  secret: ${JWT_SECRET:ton-super-secret-très-long-au-moins-64-caractères-change-le-!!!!!}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}

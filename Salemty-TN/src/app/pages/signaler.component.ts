@@ -1,13 +1,11 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { HttpClientModule } from '@angular/common/http';
-import { ApiService } from '../services/api.service';
 
 @Component({
   selector: 'app-signaler',
   standalone: true,
-  imports: [CommonModule, FormsModule, HttpClientModule],
+  imports: [CommonModule, FormsModule],
   template: `
     <div class="signaler-page">
       <div class="container">
@@ -454,8 +452,6 @@ export class SignalerComponent {
   hasComorbidities: boolean = false;
   selectedGovernorate: string = '';
 
-  constructor(private api: ApiService) {}
-
   nextStep() {
     if (this.currentStep() < 3) {
       this.currentStep.set(this.currentStep() + 1);
@@ -490,41 +486,9 @@ export class SignalerComponent {
     this.selectedGovernorate = '';
   }
 
-  private buildReportPayload() {
-    return {
-      symptoms: this.selectedSymptoms.join(', '),
-      symptomList: this.selectedSymptoms,
-      description: this.otherSymptoms,
-      severity: this.symptomDuration || 'MILD',
-      location: this.locationMethod(),
-      latitude: '',
-      longitude: '',
-      governorate: this.selectedGovernorate,
-      anonymous: true,
-    };
-  }
-
   submitForm() {
-    if (this.selectedSymptoms.length > 0 && this.selectedGovernorate) {
-      const payload = this.buildReportPayload();
-      console.log('Submitting payload:', payload);
-      this.api.submitReport(payload).subscribe({
-        next: (res: any) => {
-          console.log('Response received:', res);
-          if (res.success) {
-            this.submissionSuccess.set(true);
-          } else {
-            console.error('submit error', res.message);
-            alert('Erreur: ' + (res.message || 'Une erreur est survenue'));
-          }
-        },
-        error: (err) => {
-          console.error('HTTP error', err);
-          alert('Erreur de connexion: ' + (err?.error?.message || err?.message || 'Impossible de se connecter au serveur'));
-        },
-      });
-    } else {
-      alert('Veuillez remplir tous les champs requis (symptômes et gouvernorate)');
+    if (this.selectedSymptoms.length > 0 && this.symptomDuration && this.selectedGovernorate) {
+      this.submissionSuccess.set(true);
     }
   }
 
