@@ -32,7 +32,16 @@ export class AuthService {
     this.initializeFromStorage();
   }
 
+  // simple guard to ensure code only touches localStorage in browser context
+  private isBrowser(): boolean {
+    return typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
+  }
+
   private initializeFromStorage(): void {
+    if (!this.isBrowser()) {
+      return; // nothing to load on server or non-browser env
+    }
+
     const token = localStorage.getItem("token");
     const userJson = localStorage.getItem("user");
     
@@ -76,20 +85,27 @@ export class AuthService {
   }
 
   private setAuth(token: string, user: User): void {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(user));
+    if (this.isBrowser()) {
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+    }
     this.currentUser.set(user);
     this.isAuthenticated.set(true);
   }
 
   private clearAuth(): void {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    if (this.isBrowser()) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+    }
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
   }
 
   getToken(): string | null {
+    if (!this.isBrowser()) {
+      return null;
+    }
     return localStorage.getItem("token");
   }
 }
