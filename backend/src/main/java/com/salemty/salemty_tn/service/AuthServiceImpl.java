@@ -27,7 +27,7 @@ public class AuthServiceImpl implements AuthService {
     private final EmailService emailService;
 
     @Override
-    public void register(RegisterRequest request) {
+    public LoginResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
@@ -43,24 +43,38 @@ public class AuthServiceImpl implements AuthService {
         user.setGovernorate(request.getGovernorate());
         user.setPostalCode(request.getPostalCode());
         user.setRole("CITIZEN");
-        user.setEmailVerified(false);
+        user.setEmailVerified(true); // Auto-verify for now
         user.setActive(true);
         user.setCreatedAt(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
 
-        // Send verification email
-        String token = UUID.randomUUID().toString();
-        EmailToken emailToken = new EmailToken();
-        emailToken.setEmail(request.getEmail());
-        emailToken.setToken(token);
-        emailToken.setType("VERIFICATION");
-        emailToken.setCreatedAt(LocalDateTime.now());
-        emailToken.setExpiresAt(LocalDateTime.now().plusHours(24));
-        emailToken.setUsed(false);
+        // Generate JWT token
+        String token = jwtService.generateToken(savedUser.getId());
 
-        emailTokenRepository.save(emailToken);
-        emailService.sendVerificationEmail(request.getEmail(), token);
+        // Send verification email (optional, since we auto-verify)
+        String emailToken = UUID.randomUUID().toString();
+        EmailToken emailTokenObj = new EmailToken();
+        emailTokenObj.setEmail(request.getEmail());
+        emailTokenObj.setToken(emailToken);
+        emailTokenObj.setType("VERIFICATION");
+        emailTokenObj.setCreatedAt(LocalDateTime.now());
+        emailTokenObj.setExpiresAt(LocalDateTime.now().plusHours(24));
+        emailTokenObj.setUsed(false);
+
+        emailTokenRepository.save(emailTokenObj);
+        emailService.sendVerificationEmail(request.getEmail(), emailToken);
+
+        // Return login response with token
+        LoginResponse response = new LoginResponse();
+        response.setToken(token);
+        response.setUserId(savedUser.getId());
+        response.setEmail(savedUser.getEmail());
+        response.setFirstName(savedUser.getFirstName());
+        response.setLastName(savedUser.getLastName());
+        response.setRole(savedUser.getRole());
+
+        return response;
     }
 
     @Override

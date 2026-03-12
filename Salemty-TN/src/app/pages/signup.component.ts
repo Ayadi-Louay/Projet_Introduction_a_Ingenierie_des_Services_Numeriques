@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signup',
@@ -14,6 +15,10 @@ import { FormsModule } from '@angular/forms';
           <div class="auth-header">
             <h1>Créer un compte</h1>
             <p>Rejoignez Salemty-TN pour suivre l'état de santé en Tunisie</p>
+          </div>
+
+          <div *ngIf="errorMessage" class="error-alert">
+            ❌ {{ errorMessage }}
           </div>
 
           <form class="auth-form" (ngSubmit)="onSubmit()">
@@ -390,6 +395,16 @@ import { FormsModule } from '@angular/forms';
       text-decoration: underline;
     }
 
+    .error-alert {
+      background-color: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      color: #dc2626;
+      font-size: 0.875rem;
+    }
+
     @media (max-width: 640px) {
       .auth-page {
         padding: 1rem;
@@ -418,8 +433,9 @@ export class SignupComponent {
   };
 
   isLoading = false;
+  errorMessage = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   get passwordStrength(): number {
     if (!this.formData.password) return 0;
@@ -468,16 +484,24 @@ export class SignupComponent {
     if (this.isLoading || !this.isFormValid()) return;
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    // Simuler une inscription
-    setTimeout(() => {
-      console.log('Tentative d\'inscription:', this.formData);
-      
-      // Simuler une inscription réussie
-      this.isLoading = false;
-      
-      // Rediriger vers la page de connexion
-      this.router.navigate(['/signin']);
-    }, 2000);
+    this.authService.register(this.formData).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success) {
+          console.log('✅ Inscription réussie:', response.message);
+          // Rediriger vers l'accueil
+          this.router.navigate(['/']);
+        } else {
+          this.errorMessage = response.message || 'Erreur lors de l\'inscription';
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('❌ Erreur d\'inscription:', error);
+        this.errorMessage = error?.error?.message || 'Impossible de se connecter au serveur';
+      }
+    });
   }
 }

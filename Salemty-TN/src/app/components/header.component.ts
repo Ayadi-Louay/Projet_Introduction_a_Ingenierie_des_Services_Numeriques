@@ -1,6 +1,7 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-header',
@@ -52,8 +53,16 @@ import { CommonModule } from '@angular/common';
             Profil
           </a>
           <div class="auth-buttons">
-            <a routerLink="/signin" class="btn-signin">Se connecter</a>
-            <a routerLink="/signup" class="btn-signup">S'inscrire</a>
+            <ng-container *ngIf="authService.isAuthenticated()">
+              <div class="user-menu">
+                <span class="user-name">{{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</span>
+                <button (click)="logout()" class="btn-logout">Déconnexion</button>
+              </div>
+            </ng-container>
+            <ng-container *ngIf="!authService.isAuthenticated()">
+              <a routerLink="/signin" class="btn-signin">Se connecter</a>
+              <a routerLink="/signup" class="btn-signup">S'inscrire</a>
+            </ng-container>
           </div>
         </nav>
 
@@ -164,6 +173,38 @@ import { CommonModule } from '@angular/common';
       box-shadow: 0 4px 12px rgba(231, 0, 19, 0.3);
     }
 
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding-left: 1rem;
+      border-left: 1px solid #e5e7eb;
+    }
+
+    .user-name {
+      font-weight: 600;
+      color: #1f2937;
+      font-size: 0.9rem;
+    }
+
+    .btn-logout {
+      background: none;
+      border: 1px solid #e5e7eb;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      color: #6b7280;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.9rem;
+    }
+
+    .btn-logout:hover {
+      background-color: #fee2e2;
+      border-color: #fecaca;
+      color: #dc2626;
+    }
+
     .nav-link {
       color: #6b7280;
       text-decoration: none;
@@ -254,7 +295,14 @@ import { CommonModule } from '@angular/common';
 export class HeaderComponent {
   mobileMenuOpen = signal(false);
 
+  constructor(public authService: AuthService) {}
+
   toggleMenu() {
     this.mobileMenuOpen.set(!this.mobileMenuOpen());
+  }
+
+  logout() {
+    this.authService.logout();
+    this.mobileMenuOpen.set(false);
   }
 }

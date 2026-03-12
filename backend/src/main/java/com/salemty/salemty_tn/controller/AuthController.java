@@ -15,11 +15,11 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<ApiResponse<String>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<ApiResponse<LoginResponse>> register(@RequestBody RegisterRequest request) {
         try {
-            authService.register(request);
+            LoginResponse response = authService.register(request);
             return ResponseEntity
-                    .ok(new ApiResponse<>(true, "Utilisateur créé avec succès. Vérifiez votre email.", "OK"));
+                    .ok(new ApiResponse<>(true, "Utilisateur créé avec succès", response));
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                     .body(new ApiResponse<>(false, "Erreur lors de l'inscription", null, e.getMessage()));

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AuthService } from '../services/auth.service';
 
 @Component({
   selector: 'app-signin',
@@ -14,6 +15,10 @@ import { FormsModule } from '@angular/forms';
           <div class="auth-header">
             <h1>Connexion</h1>
             <p>Connectez-vous à votre compte Salemty-TN</p>
+          </div>
+
+          <div *ngIf="errorMessage" class="error-alert">
+            ❌ {{ errorMessage }}
           </div>
 
           <form class="auth-form" (ngSubmit)="onSubmit()">
@@ -289,6 +294,16 @@ import { FormsModule } from '@angular/forms';
       text-decoration: underline;
     }
 
+    .error-alert {
+      background-color: #fee2e2;
+      border: 1px solid #fecaca;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+      color: #dc2626;
+      font-size: 0.875rem;
+    }
+
     @media (max-width: 640px) {
       .auth-page {
         padding: 1rem;
@@ -308,23 +323,31 @@ export class SigninComponent {
   };
 
   isLoading = false;
+  errorMessage = '';
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   onSubmit(): void {
     if (this.isLoading) return;
 
     this.isLoading = true;
+    this.errorMessage = '';
 
-    // Simuler une connexion
-    setTimeout(() => {
-      console.log('Tentative de connexion:', this.formData);
-      
-      // Simuler une connexion réussie
-      this.isLoading = false;
-      
-      // Rediriger vers la page d'accueil
-      this.router.navigate(['/']);
-    }, 2000);
+    this.authService.login(this.formData.email, this.formData.password).subscribe({
+      next: (response) => {
+        this.isLoading = false;
+        if (response.success) {
+          console.log('✅ Connexion réussie:', response.message);
+          this.router.navigate(['/']);
+        } else {
+          this.errorMessage = response.message || 'Erreur lors de la connexion';
+        }
+      },
+      error: (error) => {
+        this.isLoading = false;
+        console.error('❌ Erreur de connexion:', error);
+        this.errorMessage = error?.error?.message || 'Email ou mot de passe incorrect';
+      }
+    });
   }
 }

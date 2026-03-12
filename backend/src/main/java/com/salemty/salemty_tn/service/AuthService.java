@@ -7,7 +7,7 @@ import com.salemty.salemty_tn.dto.LoginResponse;
 import com.salemty.salemty_tn.dto.UserProfileDTO;
 
 public interface AuthService {
-    void register(RegisterRequest request);
+    LoginResponse register(RegisterRequest request);
 
     LoginResponse login(LoginRequest request);
 
