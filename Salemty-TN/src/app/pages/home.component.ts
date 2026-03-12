@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
+import { isPlatformBrowser } from '@angular/common';
+import { Inject, PLATFORM_ID } from '@angular/core';
+
+
 @Component({
   selector: 'app-home',
   standalone: true,
@@ -705,8 +709,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.renderSimpleChart(trend.data, `trendChart${ index }`);
     });
   }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+
 
   renderSimpleChart(data: number[], elementId: string): void {
+    if (!isPlatformBrowser(this.platformId)) {
+      return; // Ne rien faire côté serveur
+    }
+
     const canvas = document.getElementById(elementId) as HTMLCanvasElement;
     if (!canvas) return;
 
