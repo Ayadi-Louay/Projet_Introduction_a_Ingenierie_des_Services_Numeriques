@@ -12,12 +12,20 @@ import { ApiService } from '../services/api.service';
     <div class="profil-page">
       <div class="container">
         <div class="profile-header">
-          <div class="profile-avatar">{{ authService.currentUser()?.firstName.charAt(0) }}</div>
+          <div class="profile-avatar">
+            {{ authService.currentUser()?.firstName?.charAt(0) ?? '?' }}
+          </div>
           <div class="profile-info">
-            <h1>{{ authService.currentUser()?.firstName }} {{ authService.currentUser()?.lastName }}</h1>
-            <p class="profile-status">Email: {{ authService.currentUser()?.email }}</p>
+            <h1>
+              {{ authService.currentUser()?.firstName ?? '' }}
+              {{ authService.currentUser()?.lastName ?? '' }}
+            </h1>
+            <p class="profile-status">
+              Email: {{ authService.currentUser()?.email ?? '' }}
+            </p>
           </div>
         </div>
+
 
         <div class="profile-grid">
           <!-- Historique des signalements -->
