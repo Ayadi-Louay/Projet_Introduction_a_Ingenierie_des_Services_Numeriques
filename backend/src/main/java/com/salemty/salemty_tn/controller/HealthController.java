@@ -28,19 +28,16 @@ public class HealthController {
             @RequestHeader(value = "Authorization", required = false) String authHeader,
             @RequestBody HealthReportDTO reportDTO) {
         try {
-            String userId = "test-user-id";
-            
-            // Extract userId from JWT token if available
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                String token = authHeader.substring(7);
-                userId = jwtService.extractUserId(token);
+            // token must be present
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                throw new RuntimeException("Token manquant");
             }
-            
-            // Use userId from reportDTO if provided (from frontend)
-            if (reportDTO.getUserId() != null && !reportDTO.getUserId().isEmpty()) {
-                userId = reportDTO.getUserId();
+            String token = authHeader.substring(7);
+            String userId = jwtService.extractUserId(token);
+            if (userId == null || userId.isEmpty()) {
+                throw new RuntimeException("Utilisateur non authentifié");
             }
-            
+
             HealthReport report = healthService.submitReport(userId, reportDTO);
             return ResponseEntity.ok(new ApiResponse<>(true, "Signalement soumis avec succès", report));
         } catch (Exception e) {
@@ -58,10 +55,10 @@ public class HealthController {
                 return ResponseEntity.badRequest()
                         .body(new ApiResponse<>(false, "Token manquant", null));
             }
-            
+
             String token = authHeader.substring(7);
             String userId = jwtService.extractUserId(token);
-            
+
             List<HealthReport> reports = healthService.getUserReports(userId);
             return ResponseEntity.ok(new ApiResponse<>(true, "Signalements récupérés", reports));
         } catch (Exception e) {
