@@ -37,7 +37,7 @@ import { CommonModule } from '@angular/common';
               </div>
 
               <div class="tip-card">
-                <div class="tip-icon">\u25cf</div>
+                <div class="tip-icon"><img src="C:/Users/ayadi/Downloads/Projet_Introduction_a_Ingenierie_des_Services_Numeriques/Salemty-TN/public/repo.png" alt="Repos" /></div>
                 <h3>Repos</h3>
                 <ul>
                   <li>7-8 heures de sommeil par nuit</li>

@@ -1,6 +1,5 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, PLATFORM_ID, Inject } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-carte',
@@ -13,13 +12,6 @@ import { isPlatformBrowser } from '@angular/common';
         <p class="subtitle">Vue d'ensemble des signalements en Tunisie</p>
 
         <div class="controls">
-          <select class="filter-select" (change)="filterByDisease($event)">
-            <option value="">Toutes les maladies</option>
-            <option value="grippe">Grippe</option>
-            <option value="gastro">Gastro-entérite</option>
-            <option value="allergie">Allergie</option>
-            <option value="rhume">Rhume</option>
-          </select>
           <div class="legend">
             <div class="legend-item">
               <span class="dot" style="background-color: #10b981;"></span>
@@ -36,7 +28,15 @@ import { isPlatformBrowser } from '@angular/common';
           </div>
         </div>
 
-        <div class="map-container" #mapContainer></div>
+        <div class="map-container">
+          <img src="/tunisia-map.png" alt="Carte de Tunisie" class="tunisia-map" />
+          <div class="map-overlay">
+            <div class="overlay-info">
+              <h3>Carte de surveillance des maladies</h3>
+              <p>Visualisation des signalements sur le territoire tunisien</p>
+            </div>
+          </div>
+        </div>
 
         <div class="regions-stats">
           <h2>Statistiques par gouvernorat</h2>
@@ -80,20 +80,11 @@ import { isPlatformBrowser } from '@angular/common';
 
     .controls {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
       align-items: center;
       gap: 2rem;
       margin-bottom: 2rem;
       flex-wrap: wrap;
-    }
-
-    .filter-select {
-      min-width: 200px;
-      padding: 0.75rem;
-      border: 2px solid #E70013;
-      border-radius: 0.5rem;
-      font-size: 1rem;
-      cursor: pointer;
     }
 
     .legend {
@@ -122,6 +113,36 @@ import { isPlatformBrowser } from '@angular/common';
       margin-bottom: 3rem;
       height: 500px;
       border: 1px solid #e5e7eb;
+      position: relative;
+    }
+
+    .tunisia-map {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .map-overlay {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 1rem;
+      border-radius: 0.5rem;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      max-width: 300px;
+    }
+
+    .overlay-info h3 {
+      margin: 0 0 0.5rem 0;
+      color: #E70013;
+      font-size: 1.1rem;
+    }
+
+    .overlay-info p {
+      margin: 0;
+      color: #6b7280;
+      font-size: 0.9rem;
     }
 
     .regions-stats h2 {
@@ -210,11 +231,7 @@ import { isPlatformBrowser } from '@angular/common';
     @media (max-width: 768px) {
       .controls {
         flex-direction: column;
-        align-items: stretch;
-      }
-
-      .filter-select {
-        width: 100%;
+        align-items: center;
       }
 
       .legend {
@@ -230,29 +247,10 @@ import { isPlatformBrowser } from '@angular/common';
       }
     }
 
-    :host ::ng-deep .leaflet-container {
-      background: #e5e7eb !important;
-    }
-
-    :host ::ng-deep .leaflet-popup-content-wrapper {
-      background-color: white;
-      border-radius: 0.5rem;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-    }
-
-    :host ::ng-deep .leaflet-popup-tip {
-      background-color: white;
-    }
   `]
 })
-export class CarteComponent implements OnInit, AfterViewInit {
-  @ViewChild('mapContainer', { static: false }) mapContainer!: ElementRef;
-  
-  private map: any;
-  private markers: any[] = [];
-  private L: any;
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {}
+export class CarteComponent implements OnInit {
+  constructor() {}
 
   regions = [
     { name: 'Tunis', lat: 36.8065, lng: 10.1815, count: 324, level: 'high', disease: 'Grippe' },
@@ -267,118 +265,6 @@ export class CarteComponent implements OnInit, AfterViewInit {
   ];
 
   ngOnInit(): void {
-    console.log('ngOnInit called');
-  }
-
-  ngAfterViewInit(): void {
-    console.log('ngAfterViewInit called');
-    if (isPlatformBrowser(this.platformId)) {
-      // Add a small delay to ensure DOM is fully rendered
-      setTimeout(() => {
-        this.initMap();
-      }, 100);
-    }
-  }
-
-  private initMap(): void {
-    console.log('initMap called');
-    console.log('mapContainer:', this.mapContainer);
-    console.log('mapContainer.nativeElement:', this.mapContainer?.nativeElement);
-    console.log('isPlatformBrowser:', isPlatformBrowser(this.platformId));
-    
-    if (!this.mapContainer || !this.mapContainer.nativeElement) {
-      console.error('Map container element not found!');
-      return;
-    }
-
-    // Import Leaflet only in browser
-    if (isPlatformBrowser(this.platformId)) {
-      try {
-        const L = require('leaflet');
-        this.L = L;
-        console.log('Leaflet loaded:', L);
-
-        this.map = L.map(this.mapContainer.nativeElement).setView([35.8989, 9.5375], 6);
-        console.log('Map created:', this.map);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '© OpenStreetMap contributors',
-          maxZoom: 18
-        }).addTo(this.map);
-
-        this.addMarkers(this.regions);
-        console.log('Markers added');
-      } catch (error) {
-        console.error('Error initializing map:', error);
-      }
-    }
-  }
-
-  private addMarkers(regions: any[]): void {
-    if (!this.map || !this.L) return;
-
-    // Supprimer les anciens marqueurs
-    this.markers.forEach(marker => this.map!.removeLayer(marker));
-    this.markers = [];
-
-    regions.forEach(region => {
-      const color = this.getColorByLevel(region.level);
-      const icon = this.createCustomIcon(color);
-      
-      const marker = this.L.marker([region.lat, region.lng], { icon })
-        .bindPopup(`
-          <div style="font-family: Arial, sans-serif;">
-            <strong>${region.name}</strong><br>
-            <strong>${region.count}</strong> signalements<br>
-            Maladie: ${region.disease}<br>
-            Niveau: ${region.level.toUpperCase()}
-          </div>
-        `)
-        .addTo(this.map!);
-
-      this.markers.push(marker);
-    });
-  }
-
-  private createCustomIcon(color: string): any {
-    return this.L.icon({
-      iconUrl: `data:image/svg+xml;base64,${this.svgToBase64(color)}`,
-      iconSize: [32, 41],
-      iconAnchor: [16, 41],
-      popupAnchor: [0, -41]
-    });
-  }
-
-  private svgToBase64(color: string): string {
-    const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="${color}" width="24" height="24">
-        <path d="M12 0C7.58172 0 4 3.58172 4 8C4 13 12 24 12 24S20 13 20 8C20 3.58172 16.4183 0 12 0Z"/>
-      </svg>
-    `;
-    return btoa(svg);
-  }
-
-  private getColorByLevel(level: string): string {
-    switch (level) {
-      case 'high':
-        return '#E70013';
-      case 'medium':
-        return '#f59e0b';
-      case 'low':
-        return '#10b981';
-      default:
-        return '#3b82f6';
-    }
-  }
-
-  filterByDisease(event: any): void {
-    const disease = event.target.value;
-    if (!disease) {
-      this.addMarkers(this.regions);
-    } else {
-      const filtered = this.regions.filter(r => r.disease.toLowerCase() === disease);
-      this.addMarkers(filtered);
-    }
+    console.log('Carte component initialized with static map');
   }
 }
-
